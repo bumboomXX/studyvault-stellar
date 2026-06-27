@@ -1,172 +1,317 @@
-# StudyVault – Decentralized Class Document Library
+# StudyVault Stellar
 
-## Problem
+StudyVault is a Stellar Level 3 dApp built with Soroban smart contracts, a React frontend, Freighter wallet integration, and real contract transaction signing.
 
-Students often share duplicate study materials across chats and cloud drives, making documents difficult to organize, verify, and access fairly.
+The project helps students publish study documents, prevent duplicate uploads through document hashes, sell access to learning materials, and verify document records on Stellar testnet.
 
-## Solution
+StudyVault does not store the original study file on-chain. It stores document metadata, a 32-byte document hash, owner address, access price, purchase counter, and document status. The actual file can live off-chain through IPFS or another storage provider.
 
-StudyVault is a decentralized document library built on Stellar where students can upload learning materials, prevent duplicate uploads, and pay 1 XLM to unlock access to documents.
-
-## Why Stellar
-
-Stellar enables low-cost, fast transactions and Soroban smart contracts, making decentralized access control and payments practical for student communities.
-
-## Target User
-
-* University students
-* Study groups
-* Classroom communities
-* Student organizations
-
-## Features
-
-* Upload learning documents
-* Prevent duplicate documents using document hash
-* Smart contract access control
-* Pay-to-access model (1 XLM)
-* Multi-wallet interaction
-* Event logging through Soroban
-* Stellar Testnet deployment
-
----
-
-## Live Demo
+## Live Deployment
 
 Network: Stellar Testnet
 
-Contract ID:
+StudyVault Contract:
 
-```txt
-CCMVEZPKYZVNLOJDFT72YPDCHIUPLRAK3M444CS36OXWU4QS2ZWL7KBB
-```
+~~~text
+CARUIK4ARRQEWZSKB4UPROVHFTFVH34L2RFZOV6YCBECHIRJB4YE75XQ
+~~~
 
-Transaction:
+StudyVault Policy Contract:
 
-```txt
-[https://stellar.expert/explorer/testnet/tx/d3592f1890148d146b5268e9963d872630fbc60ddc8d76053f918a97694e4428](https://stellar.expert/explorer/testnet/tx/61608caa0b55f1e94ebfafac24ccccd10a34f9b256d90b3c1b3)
-```
+~~~text
+CCHSKQQKFEK3MTGOAB4GBK4XDLHYT7NIVHWIASUYGHXS4ON7ZMMBOCDZ
+~~~
 
----
+StudyVault Explorer:
+
+~~~text
+https://stellar.expert/explorer/testnet/contract/CARUIK4ARRQEWZSKB4UPROVHFTFVH34L2RFZOV6YCBECHIRJB4YE75XQ
+~~~
+
+Policy Explorer:
+
+~~~text
+https://stellar.expert/explorer/testnet/contract/CCHSKQQKFEK3MTGOAB4GBK4XDLHYT7NIVHWIASUYGHXS4ON7ZMMBOCDZ
+~~~
+
+## Problem
+
+Students often share notes, guides, and learning files through chats, cloud folders, or informal payment links. This creates several problems:
+
+- duplicate documents are hard to detect
+- document ownership is not transparent
+- payment and access records are not auditable
+- sellers cannot easily prove that a file was uploaded first
+- buyers cannot easily verify the document record
+
+StudyVault demonstrates how Soroban can be used as a transparent registry and access record layer for study materials.
+
+## Why Stellar
+
+Stellar is suitable for StudyVault because study document access should be low-cost, fast, and easy to verify.
+
+- Stellar testnet allows safe experimentation without real funds.
+- Soroban supports custom document registry logic.
+- Low transaction fees fit small education-related actions.
+- Public contract IDs and transaction hashes are easy to verify.
+- Freighter gives users a simple wallet signing flow.
+
+## Architecture
+
+StudyVault uses two Soroban contracts.
+
+### 1. studyvault_policy
+
+The policy contract validates whether a document price is allowed.
+
+Main functions:
+
+- policy_name
+- minimum_price
+- maximum_price
+- is_price_allowed
+- is_document_allowed
+
+### 2. studyvault
+
+The main contract stores document records and access state.
+
+Main functions:
+
+- initialize
+- upload_document
+- get_document
+- document_id_by_hash
+- owner_document_count
+- owner_document_at
+- purchase_access
+- has_access
+- disable_document
+- stats
+- status_label
+- set_policy_contract
+
+## Level 3 Features
+
+- Rust Soroban workspace
+- Two Soroban smart contracts
+- Inter-contract communication
+- Persistent document storage
+- Duplicate document hash prevention
+- Owner-based authorization
+- Purchase access tracking
+- Contract tests with 7 passing scenarios
+- Deployed contracts on Stellar testnet
+- React frontend dashboard
+- Freighter wallet connect flow
+- Freighter requestAccess and getAddress support
+- Freighter signTransaction integration
+- Soroban RPC integration
+- TransactionBuilder usage
+- prepareTransaction usage
+- sendTransaction usage
+- nativeToScVal and scValToNative conversion
+- Frontend functions matching contract methods
+- Frontend tests with 8 passing scenarios
+- GitHub Actions CI workflow
+- One-command Level 3 verification script
+
+## Frontend Contract Integration
+
+The frontend is not a mock-only dashboard. It includes real wallet and contract integration.
+
+Wallet service:
+
+- connects to Freighter
+- requests wallet access
+- reads wallet address
+- requests transaction signature with signTransaction
+
+Contract service:
+
+- connects to Soroban RPC
+- builds transactions with TransactionBuilder
+- prepares transactions with prepareTransaction
+- asks Freighter to sign the prepared XDR
+- submits signed transactions with sendTransaction
+- simulates read calls for get_document, has_access, and stats
+- converts contract arguments with nativeToScVal
+- converts read results with scValToNative
+
+Frontend write functions:
+
+- uploadDocument calls upload_document
+- purchaseAccess calls purchase_access
+- disableDocument calls disable_document
+
+Frontend read functions:
+
+- getDocument calls get_document
+- hasAccess calls has_access
+- getStats calls stats
 
 ## Project Structure
 
-```txt
-studyvault
-│
-├── contracts
-│   └── library
-│       ├── Cargo.toml
-│       └── src
-│           └── lib.rs
-│
-├── frontend
-│
-└── README.md
-```
+~~~text
+studyvault-stellar/
+  contracts/
+    studyvault/
+      Cargo.toml
+      src/lib.rs
+      src/test.rs
+    studyvault_policy/
+      Cargo.toml
+      src/lib.rs
+  frontend/
+    src/
+      App.tsx
+      App.css
+      contractConfig.ts
+      services/
+        wallet.ts
+        contract.ts
+        contract.test.ts
+  scripts/
+    deploy-and-save.ps1
+    verify-level3.ps1
+  .github/workflows/ci.yml
+  CONTRACT_ID.txt
+  POLICY_CONTRACT_ID.txt
+  DEPLOYMENT.md
+  Cargo.toml
+~~~
 
----
+## Smart Contract Tests
 
-## How to Run
+Run contract tests from the project root:
 
-### Clone
-
-```bash
-git clone https://github.com/bumboomXX/studyvault-stellar.git
-```
-
-### Enter Project
-
-```bash
-cd studyvault
-```
-
-### Build Contract
-
-```bash
-cd contracts/library
-
-cargo build
-```
-
-### Build WASM
-
-```bash
-cargo build --target wasm32v1-none --release
-```
-
-### Test
-
-```bash
+~~~powershell
 cargo test
-```
+~~~
 
-### Deploy
+Current contract coverage includes:
 
-```bash
-stellar contract deploy \
---wasm target/wasm32v1-none/release/library.wasm \
---source admin \
---network testnet
-```
+- initializes contract with policy
+- uploads document and updates indexes
+- rejects duplicate document hash
+- rejects price not allowed by policy
+- records purchase access
+- rejects underpaid purchase
+- disables document and blocks purchase
 
----
+## Frontend Tests
 
-## Smart Contract Functions
+Run frontend tests:
 
-### Upload Document
+~~~powershell
+cd frontend
+npm test
+~~~
 
-```txt
-upload(owner,title,hash)
-```
+Current frontend coverage includes:
 
-Uploads document metadata and prevents duplicates.
+- loads deployed StudyVault runtime config
+- maps frontend functions to real contract method names
+- exports write transaction functions used by the UI
+- exports read query functions used by the UI
+- converts 32-byte document hash hex into bytes
+- rejects invalid document hash length
+- builds deterministic demo hash for upload form
+- shortens contract IDs and wallet addresses for display
 
-### Pay Access
+## Build
 
-```txt
-pay(buyer,id)
-```
+Build Soroban contracts:
 
-Unlock document access after payment.
+~~~powershell
+cargo build --workspace --target wasm32v1-none --release
+~~~
 
-### Verify Access
+Build frontend:
 
-```txt
-access(buyer,id)
-```
+~~~powershell
+cd frontend
+npm ci
+npm run build
+~~~
 
-Returns access permission status.
+## Deploy
 
----
+Deploy contracts to Stellar testnet:
+
+~~~powershell
+.\scripts\deploy-and-save.ps1
+~~~
+
+The deployment script:
+
+- checks required CLIs
+- runs contract format check
+- runs contract tests
+- builds Soroban contracts
+- checks only the current project Stellar identity
+- deploys studyvault_policy
+- deploys studyvault
+- initializes studyvault with the policy contract
+- saves CONTRACT_ID.txt
+- saves POLICY_CONTRACT_ID.txt
+- saves DEPLOYMENT.md
+- updates frontend/src/contractConfig.ts
+
+The script does not print unrelated local Stellar identities from other projects.
+
+## Verify Level 3
+
+Run the full Level 3 verification script:
+
+~~~powershell
+.\scripts\verify-level3.ps1
+~~~
+
+This script checks:
+
+- required Level 3 files
+- deployed contract IDs
+- Freighter requestAccess
+- Freighter getAddress
+- Freighter signTransaction
+- TransactionBuilder
+- prepareTransaction
+- sendTransaction
+- nativeToScVal
+- scValToNative
+- frontend and contract function matching
+- contract tests
+- Soroban build
+- frontend tests
+- frontend build
+
+## CI
+
+GitHub Actions runs:
+
+- Rust format check
+- contract tests
+- Soroban WASM build
+- frontend dependency install
+- frontend tests
+- frontend build
 
 ## Tech Stack
 
-* Smart Contract: Rust
-* Framework: Soroban SDK v22
-* Blockchain: Stellar
-* Frontend: HTML / JavaScript
-* Wallet: Freighter
-* Network: Stellar Testnet
+- Stellar Soroban
+- Rust
+- soroban-sdk
+- React
+- TypeScript
+- Vite
+- Vitest
+- Freighter API
+- Stellar SDK
+- GitHub Actions
 
----
+## Repository
 
-## Future Improvements
-
-* Real XLM payment settlement
-* IPFS document storage
-* Search and filtering
-* UI improvements
-* Reputation system
-
----
-
-## Team
-
-Name: bum
-
-GitHub:
-https://github.com/bumboomXX
-
-University:
-Student Project
+~~~text
+https://github.com/bumboomXX/studyvault-stellar
+~~~
